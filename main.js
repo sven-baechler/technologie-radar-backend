@@ -1,44 +1,25 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const app = express();
+const server = require('./server.js');
+const databaseAccess = require('./databaseAccess.js');
+require('dotenv').config();
 
-app.use(bodyParser.json());
-const port = process.env.PORT || 3000;
-app.listen(port, () => {console.log(`Server is running on port ${port}`)});
+function connectDatabase() {
+    const connectionConfig = {
+        host: 'localhost',
+        user: 'user',
+        password: 'password',
+        database: 'technologie_radar',
+    };
 
-app.use(cors());
-app.use(bodyParser.json());
+    return new databaseAccess(connectionConfig);
+}
 
-app.get('/api/getTechnologien', (req, res) => {
-    const technologien = [
-        { id: 1, name: 'Angular', kategorie: 0, ring: 0, beschreibungTechnologie: 'Angular Beschreibung', beschreibungEinordnung: 'Beschreibung Einordnung Angular', publiziert: false, publikationsDatum: new Date() },
-        { id: 2, name: 'C#', kategorie: 1, ring: 1, beschreibungTechnologie: 'C# Beschreibung', beschreibungEinordnung: 'Beschreibung Einordnung C#', publiziert: false, publikationsDatum: new Date() },
-        { id: 3, name: 'HTML', kategorie: 2, ring: 2, beschreibungTechnologie: 'HTML Beschreibung', beschreibungEinordnung: 'Beschreibung Einordnung HTML', publiziert: false, publikationsDatum: new Date() },
-        { id: 4, name: 'CSS', kategorie: 3, ring: 3, beschreibungTechnologie: 'CSS Beschreibung', beschreibungEinordnung: 'Beschreibung Einordnung CSS', publiziert: false, publikationsDatum: new Date() },
-        { id: 5, name: 'CSS', kategorie: 0, ring: 0, beschreibungTechnologie: 'new', beschreibungEinordnung: 'new', publiziert: false, publikationsDatum: new Date() }
-    ];
-   
-    res.json(technologien);
-});
+function startServer(database) {
+    const port = process.env.PORT || 3000;
+    server(database).listen(port, () => {
+        database.connect().then(() => console.log('database connected'));
+        console.log(`Server is running on port ${port}`);
+    });
+}
 
-app.get('/api/getTechnologie/:id', (req, res) => {
-    const technologien = [
-        { id: 1, name: 'Angular', kategorie: 0, ring: 0, beschreibungTechnologie: 'Angular Beschreibung', beschreibungEinordnung: 'Beschreibung Einordnung Angular', publiziert: false, publikationsDatum: new Date() },
-        { id: 2, name: 'C#', kategorie: 1, ring: 1, beschreibungTechnologie: 'C# Beschreibung', beschreibungEinordnung: 'Beschreibung Einordnung C#', publiziert: false, publikationsDatum: new Date() },
-        { id: 3, name: 'HTML', kategorie: 2, ring: 2, beschreibungTechnologie: 'HTML Beschreibung', beschreibungEinordnung: 'Beschreibung Einordnung HTML', publiziert: false, publikationsDatum: new Date() },
-        { id: 4, name: 'CSS', kategorie: 3, ring: 3, beschreibungTechnologie: 'CSS Beschreibung', beschreibungEinordnung: 'Beschreibung Einordnung CSS', publiziert: false, publikationsDatum: new Date() },
-        { id: 5, name: 'CSS', kategorie: 0, ring: 0, beschreibungTechnologie: 'new', beschreibungEinordnung: 'new', publiziert: false, publikationsDatum: new Date() }
-    ];
-
-    const id = req.params.id;
-    const technologie = technologien.find(t => t.id == id);
-
-    res.json(technologie);
-});
-
-app.post('/api/saveTechnologie', (req, res) => {
-    console.log("saveTechnologie called in backend!");
-   
-    res.json({ message: 'saveTechnologie called in backend!' });
-});
+const database = connectDatabase();
+startServer(database);
